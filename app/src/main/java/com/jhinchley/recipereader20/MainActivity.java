@@ -1,8 +1,5 @@
 package com.jhinchley.recipereader20;
 
-import android.annotation.TargetApi;
-import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Build;
@@ -11,9 +8,6 @@ import android.os.Environment;
 import android.os.SystemClock;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
-import android.speech.tts.UtteranceProgressListener;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -38,9 +32,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
 
 public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
@@ -92,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
     //speaker object to allow me to tts easier
     private Speaker speaker;
-
+    private Conversation conversation;
 
     private void checkTTS(){
 
@@ -150,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
                     if (result.contains("yes")||result.contains("repeat")){
 
                         //repeat same thing they were on
-                        conversation(myStep,false);
+                        conversation.conversation(myStep,false);
                     }
                     //if the user is starting
                     else if ( (result.get(0).split(" ")[0].equals("recipe")) && (result.get(0).split(" ")[1].equals("for")) ){
@@ -399,80 +390,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         if (post_dict.length()>0){
             new SendJsonDataToServer(this).execute(String.valueOf(post_dict));
         }
-    }
-
-    private void conversation(String step,boolean side) {
-
-        //toast which step user is at
-        Toast.makeText(getApplicationContext(),step,Toast.LENGTH_LONG).show();
-
-        if (step.equals("ingredients")) {
-
-            speaker.speak("Ingredients for " + recipeName + ".");
-
-            speaker.pause(SHORT_DURATION);
-
-            StringBuilder sb = new StringBuilder();
-
-            for (int i = 0; i < ingredientArray.size(); i++) {
-
-                speaker.speak(ingredientArray.get(i));
-
-                sb.append(ingredientArray.get(i) + '\n');
-
-                speaker.pause(SHORT_DURATION);
-            }
-            recipeView.setText(sb);
-        }
-
-        else if (step.equals("directions")) {
-
-            speaker.speak("Directions for " + recipeName + ".");
-
-            speaker.pause(SHORT_DURATION);
-
-            StringBuilder sb = new StringBuilder();
-
-            for (int i = 0; i < directionsArray.size(); i++) {
-
-                speaker.speak(directionsArray.get(i));
-
-                sb.append(directionsArray.get(i) + '\n');
-
-                speaker.pause(LONG_DURATION);
-            }
-            recipeView.setText(sb);
-        }
-
-        else if (step.equals("unknown")){
-            speaker.speak("I don't understand that, please try again!");
-        }
-
-        else {
-            for (int i = 0; i<ingredientArray.size();i++){
-
-                if (step.equals(ingredientArray.get(i))){
-
-                    speaker.speak(ingredientArray.get(i));
-                    break;
-                }
-            }
-            for (int i = 0; i<directionsArray.size();i++){
-
-                if (step.equals(directionsArray.get(i))){
-
-                    speaker.speak(directionsArray.get(i));
-                    break;
-                }
-            }
-        }
-
-        speaker.pause(SHORT_DURATION);
-
-        speaker.speak("Do you want anything repeated?");
-
-        speaker.pause(SHORT_DURATION);
-
     }
 
     @Override
