@@ -3,7 +3,10 @@ package com.jhinchley.recipereader20;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.List;
 
 /**
  * Created by jhinchley on 7/17/16.
@@ -13,8 +16,20 @@ public class Conversation extends Activity{
     //ints for pause duration
     private final int LONG_DURATION = 5000;
     private final int SHORT_DURATION =1200;
-    public void conversation(Speaker speaker,String step,boolean side) {
 
+    //list to hold ingredients and directions respectively
+    List<String> ingredientArray, directionsArray;
+    String recipeName;
+
+    private Speaker speaker;
+    TextView recipeView;
+
+    public Conversation(Speaker passed_speaker,TextView passed_recipeView){
+        speaker=passed_speaker;
+        recipeView=passed_recipeView;
+    }
+
+    public void conversation(String step,boolean side) {
         //toast which step user is at
         Toast.makeText(getApplicationContext(),step,Toast.LENGTH_LONG).show();
 

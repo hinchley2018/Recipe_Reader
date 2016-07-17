@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.ConditionVariable;
 import android.os.Environment;
 import android.os.SystemClock;
 import android.speech.RecognizerIntent;
@@ -106,6 +107,8 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
                     //create an instance of speaker class
                     speaker=new Speaker(this);
+                    conversation = new Conversation(speaker,recipeView);
+
                 }else{
 
                     //if no tts engine exists install one
@@ -168,11 +171,11 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
                             //if they have finished ingredients send them to directions
                             myStep = "directions";
 
-                            conversation(myStep,false);
+                            conversation.conversation(myStep,false);
                         }
                         else {
                             //i dont know what to do yet
-                            conversation("unknown",false);
+                            conversation.conversation("unknown",false);
                         }
                     }
                     //if the user wants to know how much of something send to conversation
@@ -183,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
                                 String[] mylist = result.get(j).split(" ");
                                 for (int k =0; k<mylist.length;k++){
                                     if (ingredientArray.get(i).contains(mylist[k])){
-                                        conversation(ingredientArray.get(i),false);
+                                        conversation.conversation(ingredientArray.get(i),false);
                                         break;
 
                                     }
@@ -287,7 +290,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         SystemClock.sleep(500);
 
         //prompt the user for the recipe to search for
-        SpeechListener speechListener = new SpeechListener();
+        SpeechListener speechListener = new SpeechListener(new Intent());
         speechListener.promptSpeechInput();
     }
 
@@ -330,6 +333,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
                     }
 
                     recipeName=fileArray.get(0);
+                    conversation.recipeName = recipeName;
 
                     fileArray.remove(0);
 
@@ -339,15 +343,18 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
                     for (int i =0;i<fileArray.indexOf("Directions");i++) {
                         ingredientArray.add(fileArray.get(i));
                     }
+                    //start at directions until eof
                     for (int i = fileArray.indexOf("Directions")+1;i<fileArray.size();i++){
                         directionsArray.add(fileArray.get(i));
                     }
                     //Toast.makeText(parent.getContext(),directionsArray.get(directionsArray.size()-1),Toast.LENGTH_SHORT).show();
                     //Toast.makeText(parent.getContext(), ingredientArray.get(ingredientArray.size()-1), Toast.LENGTH_SHORT).show();;
 
+                    conversation.ingredientArray=ingredientArray;
+                    conversation.directionsArray=directionsArray;
 
                     myStep = "ingredients";
-                    conversation(myStep,side);
+                    conversation.conversation(myStep,side);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
