@@ -93,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
     //speaker object to allow me to tts easier
     private Speaker speaker;
 
+
     private void checkTTS(){
 
         //checks if TTS engine is installed on the device

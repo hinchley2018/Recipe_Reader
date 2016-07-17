@@ -6,7 +6,6 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
-import android.speech.tts.UtteranceProgressListener;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -25,15 +24,7 @@ public class Speaker implements TextToSpeech.OnInitListener{
     public Speaker(Context context){
         tts = new TextToSpeech(context,this);
     }
-    /*
-    public boolean isAllowed(){
-        return allowed;
-    }
 
-    public void allow(boolean allowed){
-        this.allowed= allowed;
-    }
-    */
     @Override
     public void onInit(int status) {
         //if tts is installed
@@ -101,29 +92,6 @@ public class Speaker implements TextToSpeech.OnInitListener{
             ttsSilenceUnder20(duration);
 
         }
-    }
-
-    public class MyUtteranceProgressListener extends UtteranceProgressListener {
-
-        @Override
-        public void onStart(String utteranceId) {
-
-        }
-
-        @Override
-        public void onDone(String utteranceId) {
-            if (utteranceId.equals("Do you want anything repeated?")|| utteranceId.equals("I don't understand that, please try again!")){
-                //prompt the user for the recipe to search for
-                SpeechListener speechListener = new SpeechListener();
-                speechListener.promptSpeechInput();
-            }
-        }
-
-        @Override
-        public void onError(String utteranceId) {
-
-        }
-
     }
 
     //Free up resources
