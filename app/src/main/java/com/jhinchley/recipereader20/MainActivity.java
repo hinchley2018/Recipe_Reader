@@ -27,6 +27,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -39,7 +42,7 @@ import java.util.Locale;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
     //Find the directory for SD Card using the API
     String recipe_path = Environment.getExternalStorageDirectory().toString()+"/Recipes";
@@ -57,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
     TextView recipeView,Recipe_Name,ratings,Description;
 
     //submit button
-    Button Submit_Button;
+    Button Submit_Button,Speech_Button;
 
     //list to hold files
     List<String> fileArray;
@@ -81,6 +84,11 @@ public class MainActivity extends AppCompatActivity {
     //hold the state of the program so I can check it in onActivityResult
     private String myStep = "";
     private boolean side =true;
+
+    @Override
+    public void processResponse(String jsonResponse) {
+        //JSONObject json =
+    }
 
     //class to make my life easier with tts
     public class Speaker implements TextToSpeech.OnInitListener{
@@ -210,6 +218,7 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(check, CHECK_CODE);
 
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode, resultCode, data);
@@ -259,10 +268,19 @@ public class MainActivity extends AppCompatActivity {
                     }
                     //if the user is starting
                     else if ( (result.get(0).split(" ")[0].equals("recipe")) && (result.get(0).split(" ")[1].equals("for")) ){
-                        //Log.d("Search Recipe",result.get(0));
+                        Log.i("Search Recipe",result.get(0));
+                        String recipename ="";
+                        String[] recipevar = result.get(0).split(" ");
+                        for (int j =0;j<recipevar.length;j++){
+                            if (j>1){
+                                recipename+=recipevar[j]+=" ";
+                            }
+                        }
+                        Log.e("Recipe Result",recipename);
 
-                        //split the speech result into a list of strings and remove
-                        //"recipe for" so that only the recipename remains
+                        //send json data to server for processing
+                        send_data_to_server(recipename);
+
 
                     }
                     //if user is done send them directions
@@ -333,6 +351,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     //read it out one step at a time or the user can ask about ingredients by index
+
     private void promptSpeechInput() {
 
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -371,6 +390,9 @@ public class MainActivity extends AppCompatActivity {
 
         //submit button for user to download a recipe
         Submit_Button = (Button)findViewById(R.id.Submit_Button);
+
+        //prompt speech button for user to start
+        Speech_Button = (Button)findViewById(R.id.Speech_Button);
 
         //recipe list to hold recipes
         List<String> recipeArray = new ArrayList<String>();
@@ -415,12 +437,12 @@ public class MainActivity extends AppCompatActivity {
         //prompt the user for the recipe to search for
         promptSpeechInput();
     }
+
     @Override
     protected void onDestroy(){
         super.onDestroy();
         speaker.destroy();
     }
-
 
     public class MyOnItemSelectedListener implements AdapterView.OnItemSelectedListener{
 
@@ -478,15 +500,42 @@ public class MainActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                }
-
-                //recipeView.setText(text);
             }
+
+            //recipeView.setText(text);
+        }
 
 
         @Override
         public void onNothingSelected(AdapterView<?> parent) {
 
+        }
+    }
+
+    public void send_data_to_server(String Recipe){
+
+        //get the values from the views
+        //later we want them to be able to type what they actually wanted
+        //Recipe=FirstNameView.getText().toString();
+
+        //create a JSONObject so I can post data...
+        JSONObject post_dict = new JSONObject();
+
+        //debug
+        //Toast.makeText(getApplication(),"F:"+FirstName+",L:"+LastName+",A:"+Age,Toast.LENGTH_SHORT).show();
+
+        //try to put the recipe in the jsonObject
+        try {
+            post_dict.put("recipe",Recipe);
+            //debug
+            Log.i("My JSONObject",post_dict.toString());
+            Toast.makeText(getApplication(),"My Json:"+post_dict.toString(),Toast.LENGTH_LONG).show();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        if (post_dict.length()>0){
+            new SendJsonDataToServer(this).execute(String.valueOf(post_dict));
         }
     }
 
@@ -564,7 +613,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -587,3 +635,4 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 }
+
